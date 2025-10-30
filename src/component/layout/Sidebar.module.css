@@ -1,0 +1,84 @@
+.link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--mantine-color-gray-5);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+  position: relative;
+}
+
+.link:hover {
+  background-color: var(--mantine-color-dark-5);
+  color: var(--mantine-color-white);
+  transform: translateX(2px);
+}
+
+.linkActive {
+  background-color: var(--mantine-color-blue-filled);
+  color: var(--mantine-color-white);
+  font-weight: 600;
+}
+
+.linkActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--mantine-color-white);
+  border-radius: 0 4px 4px 0;
+}
+
+.linkActive:hover {
+  background-color: var(--mantine-color-blue-filled-hover);
+  transform: translateX(2px);
+}
+
+.logoutLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--mantine-color-red-5);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+  border: 1px solid transparent;
+}
+
+.logoutLink:hover {
+  background-color: var(--mantine-color-red-9);
+  color: var(--mantine-color-red-3);
+  border-color: var(--mantine-color-red-7);
+  transform: translateX(2px);
+}
+
+/* Smooth animations for sub-menus */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Sub-item specific styling */
+.link[style*="paddingLeft: 2rem"] {
+  font-size: 0.875rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.link[style*="paddingLeft: 2rem"]:hover {
+  background-color: var(--mantine-color-dark-6);
+  padding-left: 2.25rem;
+}

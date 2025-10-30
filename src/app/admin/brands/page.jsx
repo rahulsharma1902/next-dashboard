@@ -1,12 +1,12 @@
 import { Metadata } from "next";
 
-import LoginPage from '../../component/auth/login/LoginPage'
+import BrandView from '../../../component/admin-dashboard/brand/BrandView'
 
 
-export default function Login() {
+export default function BrandsOverviewPage() {
   return (
     <>
-    <LoginPage />
+    <BrandView />
     </>
 
   )
