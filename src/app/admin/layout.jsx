@@ -1,5 +1,5 @@
 import DashboardLayout from '../../component/layout/DashboardLayout';
-import AuthGuard from '../../component/auth/AuthDuard';
+import AuthGuard from '../../component/auth/AuthGuard';
 
 export default function AdminLayout({ children }) {
   return (

@@ -198,6 +198,7 @@ export default function Sidebar({ collapsed }) {
       <Divider mb="md" />
 
       {/* Navigation Links */}
+      
       <ScrollArea 
         style={{ 
           flex: 1,
@@ -219,6 +220,7 @@ export default function Sidebar({ collapsed }) {
       </ScrollArea>
 
       {/* Logout Button - Fixed at Bottom */}
+       {/* <Divider mb="md" /> */}
       <Box 
         style={{
           position: 'absolute',

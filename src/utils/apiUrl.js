@@ -20,5 +20,13 @@ export const API_URL = {
     SEND_VERIFICATION_EMAIL:`${AUTH_API_BASE}/send-verification-link`,
     VERIFY_EMAIL:`${AUTH_API_BASE}/verify-email`,
 
-    
+};
+
+export const BRAND_API_BASE = `${API_BASE}/brand`;
+
+export const BRAND_API = {
+
+    GET_ALL_BRANDS: `${BRAND_API_BASE}/all`,
+    ADD_BRAND: `${BRAND_API_BASE}/add`, 
+
 };
