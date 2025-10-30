@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-import BrandView from '../../../component/admin-dashboard/brand/BrandView'
+import BrandView from '../../../components/admin-dashboard/brand/BrandView'
 
 
 export default function BrandsOverviewPage() {
