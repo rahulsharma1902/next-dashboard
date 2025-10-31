@@ -28,7 +28,9 @@ export const BRAND_API = {
 
     GET_ALL_BRANDS: `${BRAND_API_BASE}/all`,
     ADD_BRAND: `${BRAND_API_BASE}/add`, 
-
+    GET_BRAND: `${BRAND_API_BASE}/:id`,
+    UPDATE_BRAND : `${BRAND_API_BASE}/update/:id`,
+    DELETE_BRAND : `${BRAND_API_BASE}/delete/:id`,
 };
 
 
@@ -37,6 +39,9 @@ export const PRODUCT_API_BASE = `${API_BASE}/product`;
 export const PRODUCT_API = {
 
     GET_ALL_PRODUCTS: `${BRAND_API_BASE}/all`,
-    ADD_PRODUCT: `${BRAND_API_BASE}/add`, 
+    ADD_PRODUCT: `${BRAND_API_BASE}/add`,
+    GET_PRODUCT: `${BRAND_API_BASE}/:id`,
+    UPDATE_PRODUCT : `${BRAND_API_BASE}/update/:id`,
+    DELETE_PRODUCT : `${BRAND_API_BASE}/delete/:id`, 
 
 };

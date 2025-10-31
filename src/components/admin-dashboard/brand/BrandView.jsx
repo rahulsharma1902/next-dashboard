@@ -1,22 +1,25 @@
-// pages/brands.jsx
+// components/admin-dashboard/brand/BrandView.jsx
 'use client';
 
 import { useCallback } from 'react';
-import { Avatar, Text, Group, Badge } from '@mantine/core';
-import { IconMail, IconPhone, IconMapPin } from '@tabler/icons-react';
+import { useRouter } from 'next/navigation';
+import { Avatar, Text, Group, Badge, Rating } from '@mantine/core';
+import { IconMail, IconPhone, IconMapPin, IconMessage } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import { modals } from '@mantine/modals';
 import DataTable from '../../../components/DataTable/DataTable';
 import useAuthStore from '../../../store/useAuthStore';
 import { axiosWrapper } from '../../../utils/api';
 import { BRAND_API } from '../../../utils/apiUrl';
 
 export default function BrandsPage() {
+  const router = useRouter();
+  
   const fetchBrands = useCallback(async (params) => {
     const token = useAuthStore.getState().token;
     const queryString = new URLSearchParams(params).toString();
     const response = await axiosWrapper(
       'get',
-      // BRAND_API.GET_ALL_BRANDS,
       `${BRAND_API.GET_ALL_BRANDS}?${queryString}`,
       {},
       token,
@@ -25,26 +28,53 @@ export default function BrandsPage() {
   }, []);
 
   const handleDelete = async (brand) => {
-    try {
-      const token = useAuthStore.getState().token;
-      await axiosWrapper(
-        'delete',
-        `${BRAND_API.GET_ALL_BRANDS}/${brand._id}`,
-        {},
-        token
-      );
-      notifications.show({
-        title: 'Success',
-        message: 'Brand deleted successfully',
-        color: 'green',
-      });
-    } catch (err) {
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to delete brand',
-        color: 'red',
-      });
-    }
+    modals.openConfirmModal({
+      title: 'Delete Brand',
+      children: (
+        <Text size="sm">
+          Are you sure you want to delete <strong>{brand.name}</strong>? This action cannot be undone.
+        </Text>
+      ),
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          const token = useAuthStore.getState().token;
+          const URL = BRAND_API.DELETE_BRAND.replace(':id', brand._id);
+          
+          await axiosWrapper(
+            'delete',
+            URL,
+            {},
+            token
+          );
+          notifications.show({
+            title: 'Success',
+            message: 'Brand deleted successfully',
+            color: 'green',
+          });
+       
+        } catch (err) {
+          notifications.show({
+            title: 'Error',
+            message: err.response?.data?.message || 'Failed to delete brand',
+            color: 'red',
+          });
+        }
+      },
+    });
+  };
+
+  const handleAdd = () => {
+    router.push('/admin/brands/add');
+  };
+
+  const handleEdit = (brand) => {
+    router.push(`/admin/brands/edit/${brand._id}`);
+  };
+
+  const handleView = (brand) => {
+    router.push(`/admin/brands/${brand._id}`);
   };
 
   const columns = [
@@ -69,6 +99,37 @@ export default function BrandsPage() {
               {item.description ? `${item.description.substring(0, 30)}...` : 'No description'}
             </Text>
           </div>
+        </Group>
+      )
+    },
+    {
+      key: 'rating',
+      header: 'Rating',
+      accessor: 'averageRating',
+      sortField: 'averageRating',
+      render: (item) => {
+        const avgRating = item.averageRating ? parseFloat(item.averageRating) : 0;
+        return (
+          <Group gap="xs">
+            <Rating value={parseFloat(avgRating)} readOnly size="sm" />
+            <Text size="sm" fw={500}>
+              {avgRating.toFixed(1)}
+            </Text>
+          </Group>
+        );
+      }
+    },
+    {
+      key: 'reviews',
+      header: 'Reviews',
+      accessor: 'totalReviews',
+      sortField: 'totalReviews',
+      render: (item) => (
+        <Group gap={6}>
+          <IconMessage size={14} opacity={0.6} />
+          <Text size="sm" fw={500}>
+            {item.totalReviews || 0}
+          </Text>
         </Group>
       )
     },
@@ -158,7 +219,7 @@ export default function BrandsPage() {
         { value: 'ACTIVE', label: 'Active' },
         { value: 'INACTIVE', label: 'Inactive' },
       ]
-    }
+    },
   ];
 
   const actions = {
@@ -174,9 +235,9 @@ export default function BrandsPage() {
       columns={columns}
       filters={filters}
       actions={actions}
-      onAdd={() => console.log('Add brand')}
-      onEdit={(brand) => console.log('Edit brand:', brand)}
-      onView={(brand) => console.log('View brand:', brand)}
+      onAdd={handleAdd}
+      onEdit={handleEdit}
+      onView={handleView}
       onDelete={handleDelete}
     />
   );
