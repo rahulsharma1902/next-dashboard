@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-import LoginPage from '../../component/auth/login/LoginPage'
+import LoginPage from '../../components/auth/login/LoginPage'
 
 
 export default function Login() {
