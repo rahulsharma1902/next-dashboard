@@ -3,14 +3,18 @@
 
 import { useCallback } from 'react';
 import { Avatar, Text, Group, Badge } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import { IconCategory, IconCurrencyDollar, IconPackage, IconStar } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import DataTable from '../../../components/DataTable/DataTable';
 import useAuthStore from '../../../store/useAuthStore';
 import { axiosWrapper } from '../../../utils/api';
-import { PRODUCT_API } from '../../../utils/apiUrl';
+import { PRODUCT_API, BRAND_API } from '../../../utils/apiUrl';
+import { useRouter } from 'next/navigation';
 
 export default function ProductsPage() {
+  const router = useRouter();
+
   const fetchProducts = useCallback(async (params) => {
     const token = useAuthStore.getState().token;
     const queryString = new URLSearchParams(params).toString();
@@ -21,60 +25,91 @@ export default function ProductsPage() {
       {},
       token,
     );
+    console.log('Fetched products with response:', response);
     return response.data;
   }, []);
 
-  const handleDelete = async (product) => {
+  // Function to fetch brands with search
+  const fetchBrands = useCallback(async (searchQuery = '') => {
     try {
       const token = useAuthStore.getState().token;
-      await axiosWrapper(
-        'delete',
-        `${PRODUCT_API.GET_ALL_PRODUCTS}/${product._id}`,
+      const params = new URLSearchParams();
+      
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      params.append('limit', '20'); // Limit results for better performance
+      
+      const response = await axiosWrapper(
+        'get',
+        `${BRAND_API.GET_ALL_BRANDS}?${params.toString()}`,
         {},
         token
       );
-      notifications.show({
-        title: 'Success',
-        message: 'Product deleted successfully',
-        color: 'green',
-      });
+      
+      if (response.data && response.data.data) {
+        return response.data.data.map(brand => ({
+          value: brand._id,
+          label: brand.name
+        }));
+      }
+      return [];
     } catch (err) {
+      console.error('Failed to fetch brands:', err);
       notifications.show({
         title: 'Error',
-        message: 'Failed to delete product',
+        message: 'Failed to load brands',
         color: 'red',
       });
+      return [];
     }
+  }, []);
+
+  const handleDelete = async (product) => {
+    modals.openConfirmModal({
+      title: 'Delete Product',
+      children: (
+        <Text size="sm">
+          Are you sure you want to delete <strong>{product.name}</strong>? This action cannot be undone.
+        </Text>
+      ),
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          const token = useAuthStore.getState().token;
+          await axiosWrapper(
+            'delete',
+            `${PRODUCT_API.GET_ALL_PRODUCTS}/${product._id}`,
+            {},
+            token
+          );
+          notifications.show({
+            title: 'Success',
+            message: 'Product deleted successfully',
+            color: 'green',
+          });
+        } catch (err) {
+          notifications.show({
+            title: 'Error',
+            message: err.response?.data?.message || 'Failed to delete product',
+            color: 'red',
+          });
+        }
+      },
+    });
   };
 
   const handleAddProduct = () => {
-    // Navigate to add product page or open modal
-    console.log('Add new product');
-    notifications.show({
-      title: 'Info',
-      message: 'Navigate to add product form',
-      color: 'blue',
-    });
+    router.push('/admin/products/add');
   };
 
   const handleEditProduct = (product) => {
-    // Navigate to edit product page or open modal
-    console.log('Edit product:', product);
-    notifications.show({
-      title: 'Info',
-      message: `Editing product: ${product.name}`,
-      color: 'yellow',
-    });
+    router.push(`/admin/products/edit/${product._id}`);
   };
 
   const handleViewProduct = (product) => {
-    // Navigate to product details page
-    console.log('View product:', product);
-    notifications.show({
-      title: 'Info',
-      message: `Viewing product: ${product.name}`,
-      color: 'blue',
-    });
+    router.push(`/admin/products/${product._id}`);
   };
 
   const columns = [
@@ -95,20 +130,20 @@ export default function ProductsPage() {
           </Avatar>
           <div>
             <Text fw={500} size="sm">{item.name}</Text>
-            <Text size="xs" c="dimmed">SKU: {item.sku || 'N/A'}</Text>
+            <Text size="xs" c="dimmed">HANDLE: {item.handle || 'N/A'}</Text>
           </div>
         </Group>
       )
     },
     {
-      key: 'category',
-      header: 'Category',
-      accessor: 'category',
-      sortField: 'category',
+      key: 'brand',
+      header: 'Brand',
+      accessor: 'brand',
+      sortField: 'brand',
       render: (item) => (
         <Group gap={6}>
           <IconCategory size={14} opacity={0.6} />
-          <Text size="sm">{item.category || '-'}</Text>
+          <Text size="sm">{item.brandId?.name || '-'}</Text>
         </Group>
       )
     },
@@ -133,11 +168,11 @@ export default function ProductsPage() {
         <Group gap={6}>
           <IconPackage size={14} opacity={0.6} />
           <Badge 
-            color={item.stock > 20 ? 'green' : item.stock > 5 ? 'yellow' : 'red'} 
+            color={item.stockQuantity > 20 ? 'green' : item.stockQuantity > 5 ? 'yellow' : 'red'} 
             variant="light"
             size="sm"
           >
-            {item.stock || 0} in stock
+            {item.stockQuantity || 0} in stock
           </Badge>
         </Group>
       )
@@ -150,7 +185,7 @@ export default function ProductsPage() {
       render: (item) => (
         <Group gap={6}>
           <IconStar size={14} opacity={0.6} />
-          <Text size="sm">{item.rating ? `${item.rating}/5` : 'No ratings'}</Text>
+          <Text size="sm">{item.averageRating ? `${item.averageRating}/5` : 'No ratings'}</Text>
         </Group>
       )
     },
@@ -163,8 +198,7 @@ export default function ProductsPage() {
         <Badge 
           color={
             item.status === 'ACTIVE' ? 'green' : 
-            item.status === 'DRAFT' ? 'yellow' : 
-            item.status === 'ARCHIVED' ? 'gray' : 'blue'
+            item.status === 'INACTIVE' ? 'gray' : 'blue'
           } 
           variant="light"
           size="sm"
@@ -183,24 +217,18 @@ export default function ProductsPage() {
       placeholder: 'Search by product name...',
     },
     {
-      key: 'sku',
-      label: 'SKU',
+      key: 'handle',
+      label: 'Handle',
       type: 'text',
-      placeholder: 'Search by SKU...',
+      placeholder: 'Search by Handle...',
     },
     {
-      key: 'category',
-      label: 'Category',
+      key: 'brandId',
+      label: 'Brand',
       type: 'select',
-      options: [
-        { value: '', label: 'All Categories' },
-        { value: 'electronics', label: 'Electronics' },
-        { value: 'clothing', label: 'Clothing' },
-        { value: 'home', label: 'Home & Garden' },
-        { value: 'sports', label: 'Sports' },
-        { value: 'books', label: 'Books' },
-        { value: 'beauty', label: 'Beauty' },
-      ]
+      placeholder: 'Search and select brand...',
+      filterFunction: fetchBrands,
+      loadOnMount: true, // Load initial brands when component mounts
     },
     {
       key: 'status',
@@ -209,8 +237,7 @@ export default function ProductsPage() {
       options: [
         { value: '', label: 'All Statuses' },
         { value: 'ACTIVE', label: 'Active' },
-        { value: 'DRAFT', label: 'Draft' },
-        { value: 'ARCHIVED', label: 'Archived' },
+        { value: 'INACTIVE', label: 'Inactive' },
       ]
     },
     {
@@ -235,13 +262,13 @@ export default function ProductsPage() {
 
   const customExport = (data) => {
     // Custom CSV export for products
-    const headers = ['Name', 'SKU', 'Category', 'Price', 'Stock', 'Rating', 'Status'];
+    const headers = ['Name', 'Handle', 'Brand', 'Price', 'Stock', 'Rating', 'Status'];
     const csvContent = [
       headers.join(','),
       ...data.map(product => [
         `"${(product.name || '').replace(/"/g, '""')}"`,
-        `"${(product.sku || '').replace(/"/g, '""')}"`,
-        `"${(product.category || '').replace(/"/g, '""')}"`,
+        `"${(product.handle || '').replace(/"/g, '""')}"`,
+        `"${(product.brandId?.name || '').replace(/"/g, '""')}"`,
         product.price || 0,
         product.stock || 0,
         product.rating || 0,

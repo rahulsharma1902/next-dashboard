@@ -52,7 +52,7 @@ const navigationLinks = [
     subItems: [
       { label: 'View All Brands', icon: IconList, href: '/admin/brands' },
       { label: 'Add Brand', icon: IconPlus, href: '/admin/brands/add' },
-      { label: 'Brand Categories', icon: IconEye, href: '/admin/brands/categories' },
+      // { label: 'Brand Categories', icon: IconEye, href: '/admin/brands/categories' },
     ]
   },
   { 
@@ -62,8 +62,8 @@ const navigationLinks = [
     subItems: [
       { label: 'All Products', icon: IconList, href: '/admin/products' },
       { label: 'Add Product', icon: IconPlus, href: '/admin/products/add' },
-      { label: 'Edit Products', icon: IconEdit, href: '/admin/products/edit' },
-      { label: 'Product Categories', icon: IconEye, href: '/admin/products/categories' },
+      // { label: 'Edit Products', icon: IconEdit, href: '/admin/products/edit' },
+      // { label: 'Product Categories', icon: IconEye, href: '/admin/products/categories' },
     ]
   },
   { 

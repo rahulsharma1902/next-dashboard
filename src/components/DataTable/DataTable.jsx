@@ -74,6 +74,10 @@ export default function DataTable({
   const [filterValues, setFilterValues] = useState({});
   const [showFilters, setShowFilters] = useState(false);
   
+  // Async filter data states
+  const [asyncFilterData, setAsyncFilterData] = useState({});
+  const [loadingFilters, setLoadingFilters] = useState({});
+  
   // Sort states
   const [sortBy, setSortBy] = useState(defaultSort.field);
   const [sortOrder, setSortOrder] = useState(defaultSort.order);
@@ -81,11 +85,47 @@ export default function DataTable({
   // Initialize filter values
   useEffect(() => {
     const initialFilters = {};
+    const initialAsyncData = {};
+    const initialLoading = {};
+    
     filters.forEach(filter => {
       initialFilters[filter.key] = '';
+      initialAsyncData[filter.key] = [];
+      initialLoading[filter.key] = false;
     });
+    
     setFilterValues(initialFilters);
+    setAsyncFilterData(initialAsyncData);
+    setLoadingFilters(initialLoading);
   }, [filters]);
+
+  // Load initial data for async filters
+  useEffect(() => {
+    filters.forEach(async (filter) => {
+      if (filter.filterFunction && filter.loadOnMount !== false) {
+        loadAsyncFilterData(filter.key, filter.filterFunction);
+      }
+    });
+  }, [filters]);
+
+  const loadAsyncFilterData = async (filterKey, filterFunction, searchQuery = '') => {
+    setLoadingFilters(prev => ({ ...prev, [filterKey]: true }));
+    try {
+      const data = await filterFunction(searchQuery);
+      setAsyncFilterData(prev => ({ 
+        ...prev, 
+        [filterKey]: data 
+      }));
+    } catch (error) {
+      console.error(`Failed to load filter data for ${filterKey}:`, error);
+      setAsyncFilterData(prev => ({ 
+        ...prev, 
+        [filterKey]: [] 
+      }));
+    } finally {
+      setLoadingFilters(prev => ({ ...prev, [filterKey]: false }));
+    }
+  };
 
   // Main fetch function
   const fetchData = useCallback(async () => {
@@ -207,6 +247,10 @@ export default function DataTable({
     }));
   };
 
+  const handleAsyncSearch = async (filterKey, filterFunction, searchQuery) => {
+    await loadAsyncFilterData(filterKey, filterFunction, searchQuery);
+  };
+
   const exportToCSV = () => {
     if (data.length === 0) {
       notifications.show({
@@ -283,6 +327,28 @@ export default function DataTable({
 
     switch (filter.type) {
       case 'select':
+        if (filter.filterFunction) {
+          // Async select with search
+          return (
+            <Select
+              {...commonProps}
+              data={asyncFilterData[filter.key] || []}
+              clearable
+              searchable
+              nothingFound={loadingFilters[filter.key] ? "Loading..." : "No options found"}
+              onSearchChange={(query) => {
+                if (filter.onSearchChange) {
+                  filter.onSearchChange(query);
+                }
+                // Debounce the search
+                setTimeout(() => {
+                  handleAsyncSearch(filter.key, filter.filterFunction, query);
+                }, 300);
+              }}
+              onChange={(value) => handleFilterChange(filter.key, value)}
+            />
+          );
+        }
         return (
           <Select
             {...commonProps}
@@ -311,7 +377,7 @@ export default function DataTable({
     
     const value = typeof column.accessor === 'function' 
       ? column.accessor(item)
-      : item[col.accessor];
+      : item[column.accessor];
     
     return <Text size="sm">{value || '-'}</Text>;
   };

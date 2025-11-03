@@ -38,10 +38,23 @@ export const PRODUCT_API_BASE = `${API_BASE}/product`;
 
 export const PRODUCT_API = {
 
-    GET_ALL_PRODUCTS: `${BRAND_API_BASE}/all`,
-    ADD_PRODUCT: `${BRAND_API_BASE}/add`,
-    GET_PRODUCT: `${BRAND_API_BASE}/:id`,
-    UPDATE_PRODUCT : `${BRAND_API_BASE}/update/:id`,
-    DELETE_PRODUCT : `${BRAND_API_BASE}/delete/:id`, 
+    GET_ALL_PRODUCTS: `${PRODUCT_API_BASE}/all`,
+    ADD_PRODUCT: `${PRODUCT_API_BASE}/add`,
+    GET_PRODUCT: `${PRODUCT_API_BASE}/:id`,
+    UPDATE_PRODUCT : `${PRODUCT_API_BASE}/update/:id`,
+    DELETE_PRODUCT : `${PRODUCT_API_BASE}/delete/:id`, 
+
+};
+
+export const REVIEW_API_BASE = `${API_BASE}/review`;
+
+export const REVIEW_API = {
+
+    GET_ALL_REVIEWS: `${REVIEW_API_BASE}/all`,
+    ADD_REVIEW: `${REVIEW_API_BASE}/add`,
+    GET_REVIEW: `${REVIEW_API_BASE}/:id`,
+    UPDATE_REVIEW : `${REVIEW_API_BASE}/update/:id`,
+    DELETE_REVIEW : `${REVIEW_API_BASE}/delete/:id`, 
+    STATUS_REVIEW : `${REVIEW_API_BASE}/:id/status`, 
 
 };
